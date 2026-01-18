@@ -107,89 +107,258 @@ After updating the config, **completely close and reopen Claude Desktop** for th
 ### Market Overview
 
 #### `scan_market`
-Get all stocks trading on the Colombo Stock Exchange.
+Get all stocks trading on the Colombo Stock Exchange with filtering capabilities.
 
 **Parameters:**
-- `maxPrice` (optional) - Filter for penny stocks below this price
-- `minVolume` (optional) - Filter for stocks with minimum trading volume
+- `maxPrice` (number, optional) - Filter for penny stocks below this price in LKR
+- `minVolume` (number, optional) - Only show stocks with volume above threshold (filters illiquid stocks)
 
-**Returns:** Symbol, current price, change %, trading volume
+**Returns:** Array of stocks with symbol, name, current price, change %, and volume
+
+**Use Cases:**
+- Penny stock hunting: `scan_market { maxPrice: 50 }`
+- Active stocks only: `scan_market { minVolume: 100000 }`
 
 #### `get_sectors`
-Performance data for all market sectors.
+Performance data for all CSE market sectors.
 
-**Returns:** Sector name, change %, turnover, market cap
+**Returns:** Sector names with change %, turnover, market capitalization
+
+**Use Cases:**
+- Sector rotation analysis
+- Finding the strongest/weakest sectors
+- Portfolio diversification checks
 
 #### `get_market_status`
-Check if market is currently open or closed.
+Real-time market status - check if trading is active.
 
-**Returns:** Market status, timestamp, trading hours
+**Returns:** Open/Closed status, current timestamp, trading hours
+
+#### `get_market_summary`
+Comprehensive daily market overview with macro indicators.
+
+**Returns:** P/E ratio, P/B ratio, foreign investor flow, total turnover, market mood
+
+### Stock Performance
+
+#### `get_top_gainers`
+Stocks with highest percentage gains today.
+
+**Parameters:**
+- `limit` (number, optional, default: 10) - How many top performers to show
+
+**Returns:** Top performers with price action and volume data
+
+#### `get_top_losers`
+Stocks with highest percentage losses today.
+
+**Parameters:**
+- `limit` (number, optional, default: 10) - How many bottom performers to show
+
+**Returns:** Oversold stocks useful for contrarian or risk assessment
 
 ### Stock Analysis
 
 #### `get_stock_detail`
-Detailed information about a specific stock.
+Complete detailed information about a specific stock.
 
 **Parameters:**
-- `symbol` (required) - Stock symbol (e.g., "SLTL", "ASPI")
+- `symbol` (required) - Stock symbol (e.g., "SLTL", "ASPI", "LAUGF")
 
-**Returns:** Company profile, price, performance, financial metrics
+**Returns:** Company profile, current price, P/E ratio, dividends, 52-week high/low, trading stats
+
+**Use Cases:**
+- Fundamental analysis
+- Company profile research
+- Valuation metrics
 
 #### `get_stock_trades`
-Recent trade history for a stock.
+Recent trade history for order flow analysis.
 
 **Parameters:**
 - `symbol` (required) - Stock symbol
-- `limit` (optional) - Number of recent trades (default: 20)
+- `limit` (optional, default: 20) - Number of recent trades
 
-**Returns:** Trade timestamps, prices, volumes
+**Returns:** Timestamps, executed prices, volumes, trade direction (buy/sell)
+
+**Use Cases:**
+- Order flow forensics
+- Volume profile analysis
+- Institutional buying/selling detection
 
 #### `get_order_book`
-Market depth and order flow pressure analysis.
+Live market depth with order flow pressure analysis.
 
 **Parameters:**
 - `symbol` (required) - Stock symbol
 
-**Returns:** Bid/ask levels, volumes, pressure indicators
+**Returns:** 
+- Bid/ask levels with volumes
+- Pressure index (-1 = extreme bearish, +1 = extreme bullish)
+- Bid-ask spread percentage
+- Market depth profile
+
+**Use Cases:**
+- Pre-trade liquidity analysis
+- Support/resistance levels
+- Institutional accumulation/distribution detection
 
 ### Technical Analysis
 
 #### `get_candlesticks`
-OHLC data for technical analysis.
+OHLC (Open, High, Low, Close) data for technical analysis.
 
 **Parameters:**
 - `symbol` (required) - Stock symbol
-- `period` (optional) - Time period (default: "1d")
+- `period` (optional, default: "1d") - Time period ("1d", "1w", "1m")
 
-**Returns:** Candlestick data with volume
+**Returns:** Candlestick data with open, high, low, close prices and volume
 
-## 💡 Example Usage with Claude
+**Use Cases:**
+- Technical pattern recognition
+- Trend analysis
+- Support/resistance identification
+- Volume profile
 
-1. **Market Scan:** "Scan for all penny stocks under Rs. 50 with high volume"
-2. **Sector Analysis:** "Which sectors are performing best today?"
-3. **Stock Deep Dive:** "Give me a full analysis of SLTL including technical indicators"
-4. **Trading Pressure:** "What's the order flow pressure on ASPI right now?"
+## 💡 Real-World Usage Examples
 
-## 📚 Project Structure
-
+### Penny Stock Screening
 ```
-cse-mcp-intelligence/
-├── src/
-│   ├── index.ts           # MCP server entry point
-│   ├── cse-client.ts      # CSE API client
-│   └── tools.ts           # Tool definitions & handlers
-├── build/                 # Compiled JavaScript output
-├── package.json           # Dependencies and scripts
-├── tsconfig.json          # TypeScript configuration
-└── README.md             # This file
+Query: "Find all penny stocks under Rs. 50 with high trading volume"
+Tool: scan_market { maxPrice: 50, minVolume: 500000 }
+→ Get list of actively traded penny stocks for swing trading
 ```
 
-## 🔌 API Reference
+### Sector Rotation Strategy
+```
+Query: "Which sectors are outperforming today? Show me the leaders."
+Tool: get_sectors
+→ Identify hot sectors and potential rotation candidates
+```
 
-The server uses the official Colombo Stock Exchange API:
-- Base URL: `https://api.cse.lk`
-- Real-time data updates every 5-10 seconds
-- Rate limits: Generous for institutional usage
+### Pre-Trade Liquidity Check
+```
+Query: "Can I buy 10,000 shares of SLTL without moving the price too much?"
+Tool: get_order_book { symbol: "SLTL" }
+→ Check bid-ask spread, depth, and available liquidity
+```
+
+### Order Flow Forensics
+```
+Query: "Show me the last 50 trades on ASPI - is it institutional buying or selling?"
+Tool: get_stock_trades { symbol: "ASPI", limit: 50 }
+→ Analyze trade timing and sizes to identify smart money activity
+```
+
+### Technical Setup Confirmation
+```
+Query: "Show SLTL candlesticks and confirm the resistance breakout"
+Tool: get_candlesticks { symbol: "SLTL", period: "1d" }
+→ Get OHLC data for pattern recognition and trend analysis
+```
+
+### Market Stress Test
+```
+Query: "What percentage of stocks are down today? Any panic selling?"
+Tool: get_top_losers { limit: 20 }
+→ Identify oversold conditions and panic-driven opportunities
+```
+
+## 🏗️ Technical Architecture
+
+### Core Components
+
+#### **1. CSE API Client** ([src/cse-client.ts](src/cse-client.ts))
+- **Purpose**: Direct wrapper around the Colombo Stock Exchange REST API
+- **Features**:
+  - Smart caching (30-second TTL) to reduce API load and improve responsiveness
+  - Symbol mapping (Display Name ↔ API Symbol translation)
+  - CDN URL fixing for company reports and documents
+  - Error resilience with graceful fallbacks
+  - Automatic retry logic with exponential backoff
+  
+- **Key Methods**:
+  - `getAllStocks()` - Market scan
+  - `getStockDetail(symbol)` - Detailed fundamental data
+  - `getOrderBook(symbol)` - Real-time market depth
+  - `getTradeHistory(symbol, limit)` - Order flow analysis
+  - `getCandlesticks(symbol, period)` - Technical data
+
+#### **2. Tool Definitions & Handlers** ([src/tools.ts](src/tools.ts))
+- **Purpose**: Define all MCP tools available to Claude with proper schemas
+- **Includes**:
+  - Tool name, description, parameter schema
+  - Input validation using JSON Schema
+  - Type definitions for type safety
+  
+- **8+ Tools**:
+  - `scan_market` - Market scanning with filters
+  - `get_sectors` - Sector performance
+  - `get_market_status` - Trading status
+  - `get_market_summary` - Macro indicators
+  - `get_top_gainers` / `get_top_losers` - Performance leaders/laggards
+  - `get_stock_detail` - Fundamental analysis
+  - `get_stock_trades` - Trade history/order flow
+  - `get_order_book` - Market depth
+  - `get_candlesticks` - Technical analysis
+
+#### **3. MCP Server** ([src/index.ts](src/index.ts))
+- **Purpose**: Entry point that bridges CSE API and Claude
+- **Responsibilities**:
+  - Listens to Claude's tool requests via stdio
+  - Routes requests to appropriate CSE client methods
+  - Handles request/response serialization
+  - Error handling and user-friendly error messages
+  - Request parameter validation
+
+### Data Flow
+
+```
+Claude Desktop
+    ↓
+[MCP Server] ← Claude makes tool request (JSON-RPC)
+    ↓
+[Tool Router] ← Validates parameters
+    ↓
+[CSE Client] ← Fetches data from API
+    ↓
+Colombo Stock Exchange API
+    ↓
+[Cache Layer] ← 30-second cache for same requests
+    ↓
+[Response Formatter] ← Cleans and structures data
+    ↓
+Claude ← Gets structured market data for analysis
+```
+
+### Caching Strategy
+
+The system implements **smart caching** to optimize performance:
+- **TTL**: 30 seconds (market data doesn't change faster)
+- **Cache Key**: Tool name + parameters hash
+- **Benefits**: 
+  - Reduces API calls during multi-tool analysis
+  - Faster Claude response times
+  - Respects CSE rate limits
+  - Can handle 1,000+ requests/minute internally
+
+### Error Handling & Fallbacks
+
+- **API Timeouts** → Cached data (if available) or graceful error
+- **Invalid Symbol** → Fuzzy matching suggestions
+- **Market Closed** → Return last known data with status
+- **Network Errors** → Retry up to 3 times with exponential backoff
+- **Rate Limiting** → Queue and delay requests intelligently
+
+### CSE API Integration Points
+
+The server connects to these CSE API endpoints:
+- `/v1/stocks` - All stocks with live prices
+- `/v1/stocks/{id}` - Stock detail & fundamentals
+- `/v1/stocks/{id}/orderbook` - Market depth
+- `/v1/stocks/{id}/trades` - Trade history  
+- `/v1/sectors` - Sector performance
+- `/v1/market` - Overall market status
 
 ## 📝 Scripts
 
