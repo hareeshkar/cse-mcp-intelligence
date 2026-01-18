@@ -1,0 +1,46 @@
+{
+  "name": "cse-mcp-intelligence",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Institutional-grade MCP server for the Colombo Stock Exchange. Features real-time market data, order flow pressure analysis, and AI-powered forensic fundamental screening.",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "stocks",
+    "cse",
+    "colombo",
+    "stock-exchange",
+    "sri-lanka",
+    "financial-data",
+    "market-analysis",
+    "order-flow"
+  ],
+  "author": "hareeshkar",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hareeshkar/cse-mcp-intelligence.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hareeshkar/cse-mcp-intelligence/issues"
+  },
+  "homepage": "https://github.com/hareeshkar/cse-mcp-intelligence",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.7.0",
+    "axios": "^1.6.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.2",
+    "tsx": "^4.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
